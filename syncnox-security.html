@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Syncnox Security and governance</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap');
+
+  body{margin:0;background:#fff}
+  #sg{
+    --gray-10:#f4f4f4; --gray-20:#e0e0e0; --gray-30:#c6c6c6; --gray-50:#8d8d8d; --gray-70:#525252; --ink:#161616;
+    --accent:#015c11; --bright:#00c80d; --g-050:#EAF3DA;
+    --red:#da1e28; --red-050:#fff1f1; --orange:#c65300; --orange-050:#fff2e8; --blue:#0f62fe; --purple:#8a3ffc;
+    --muted:var(--gray-70); --faint:var(--gray-50);
+    --grad:linear-gradient(90deg,#015c11,#00c80d);
+    --scr:#FBFCF8; --scr-bar:#F2F4EC; --lane:#E9ECE2;
+    --f:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --ease:cubic-bezier(.2,0,.38,.9); --ease-soft:cubic-bezier(.16,1,.3,1); --ease-out:cubic-bezier(.22,1,.36,1); --spring:cubic-bezier(.34,1.56,.64,1);
+    font-family:var(--f);color:var(--muted);line-height:1.5;-webkit-font-smoothing:antialiased;
+    font-feature-settings:"zero" 0,"ss01" 0;font-variant-numeric:lining-nums tabular-nums;
+    background:#fff;padding:clamp(64px,8vw,112px) 0;position:relative;
+  }
+  #sg *,#sg *::before,#sg *::after{box-sizing:border-box;border-radius:0}
+  #sg .wrap{max-width:1180px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+  #sg svg.i{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+  /* header */
+  #sg .sec-head{text-align:center;max-width:780px;margin:0 auto clamp(32px,4vw,48px)}
+  #sg .eyebrow{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:inline-flex;align-items:center;gap:10px;margin:0 0 18px}
+  #sg .eyebrow::before{content:"";width:22px;height:3px;background:var(--grad)}
+  #sg h2{font-weight:400;letter-spacing:-.025em;line-height:1.08;font-size:clamp(30px,3.9vw,46px);margin:0;
+    background:linear-gradient(100deg,#0A0A0A 0%,#013a0b 46%,#00c80d 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+  #sg h2 .hl{font-weight:600}
+  #sg .sec-head p{margin:18px auto 0;font-size:1.06rem;line-height:1.6;max-width:54ch}
+
+  /* three change requests to follow */
+  #sg .tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(14px,2.4vw,32px);margin-bottom:20px}
+  #sg .tab{position:relative;display:grid;grid-template-columns:36px minmax(0,1fr);gap:13px;align-items:start;padding:18px 0 4px;background:none;border:none;cursor:pointer;font-family:inherit;text-align:left;color:inherit}
+  #sg .tab .b2{position:absolute;left:0;right:0;top:0;height:3px;background:var(--gray-10);overflow:hidden}
+  #sg .tab .b2 i{display:block;height:100%;width:0;background:var(--lc)}
+  #sg .tab.on .b2 i{width:100%}
+  #sg .tab.on.run .b2 i{width:0;animation:sgFill var(--dw,7000ms) linear forwards}
+  #sg .tab.on.run.hold .b2 i{animation-play-state:paused}
+  @keyframes sgFill{to{width:100%}}
+  #sg .tab .pi{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--gray-10);color:var(--muted);transition:background .3s,color .3s}
+  #sg .tab.on .pi{background:var(--lc);color:#fff}
+  #sg .tab small{display:block;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--faint)}
+  #sg .tab b{display:block;margin-top:1px;font-size:1rem;font-weight:600;letter-spacing:-.01em;line-height:1.3;color:var(--muted);transition:color .3s}
+  #sg .tab.on b,#sg .tab:hover b{color:var(--ink)}
+  #sg .tab:focus-visible,#sg .btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+  /* frame + screen */
+  #sg .frame{position:relative;background:linear-gradient(150deg,#000 0%,#013a0b 42%,#00c80d 100%);padding:clamp(10px,2.6vw,34px);overflow:hidden}
+  #sg .frame::before{content:"";position:absolute;inset:0;background:radial-gradient(560px circle at var(--mx,24%) var(--my,14%),rgba(90,255,120,.42),rgba(0,200,13,.15) 46%,transparent 74%);pointer-events:none}
+  #sg .scr{position:relative;z-index:1;background:var(--scr);box-shadow:0 30px 60px rgba(8,16,4,.45)}
+  #sg .bar{display:flex;align-items:center;gap:10px;height:46px;padding:0 6px 0 16px;background:var(--scr-bar);font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--ink)}
+  #sg .bar .sq{width:8px;height:8px;background:var(--accent);flex:none}
+  #sg .bar .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #sg .bar .t em{font-style:normal;color:var(--faint);font-weight:500}
+  #sg .bar .n{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--faint);white-space:nowrap}
+  #sg .ib{width:30px;height:30px;flex:none;border:none;background:none;color:var(--faint);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s}
+  #sg .ib:hover{background:#fff;color:var(--ink)}
+  #sg .ib svg{width:15px;height:15px}
+  #sg .body{padding:14px}
+
+  /* the boundary: everything below happens inside it */
+  #sg .zone{position:relative;padding:2px;background:var(--accent);background:linear-gradient(120deg,#015c11,#0a8a1c)}
+  #sg .zh{display:flex;align-items:center;gap:11px;padding:9px 14px;color:#fff}
+  #sg .zh svg{width:15px;height:15px}
+  #sg .zh b{font-size:14px;font-weight:600;letter-spacing:-.005em;white-space:nowrap}
+  #sg .zh small{font-size:13px;color:rgba(255,255,255,.78)}
+  #sg .zh .tag{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+  #sg .zh .tag i{width:7px;height:7px;background:#7dff7a;animation:sgBlink 1.6s steps(2) infinite}
+  @keyframes sgBlink{50%{opacity:.3}}
+  #sg .zin{background:var(--scr);display:flex;flex-direction:column;gap:2px;padding:2px}
+
+  /* two lanes into the plan: people above, the agent below */
+  #sg .lanes{display:grid;grid-template-columns:minmax(0,.84fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.84fr);grid-template-rows:auto 62px auto;gap:2px}
+  #sg #a-p{grid-column:1;grid-row:1} #sg #g-sso{grid-column:2;grid-row:1} #sg #g-rbac{grid-column:3;grid-row:1}
+  #sg .road{grid-column:1/4;grid-row:2}
+  #sg #a-a{grid-column:1;grid-row:3} #sg #g-auto{grid-column:2;grid-row:3} #sg #g-over{grid-column:3;grid-row:3}
+  #sg .plan{grid-column:4;grid-row:1/4}
+
+  #sg .ac,#sg .g,#sg .plan{position:relative;background:#fff;padding:16px 16px 14px;min-width:0;transition:background .35s}
+  #sg .hd{display:flex;align-items:center;gap:11px}
+  #sg .ti{width:34px;height:34px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--gray-10);color:var(--muted);transition:background .35s,color .35s}
+  #sg .ti svg{width:17px;height:17px}
+  #sg .hd b{font-size:15.5px;font-weight:600;letter-spacing:-.01em;line-height:1.2;color:var(--ink)}
+  #sg .lb{display:block;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--ink)}
+  #sg .lb em{font-style:normal;font-weight:500;letter-spacing:.04em;color:var(--faint);margin-left:6px}
+  #sg .ds{display:block;margin-top:9px;font-size:13.5px;line-height:1.4;color:var(--muted)}
+  /* who is asking */
+  #sg .ac .ti{background:var(--tc);color:#fff}
+  #sg .ac .an{display:block;margin-top:1px;font-size:15.5px;font-weight:600;letter-spacing:-.01em;line-height:1.2;color:var(--ink)}
+  #sg .ac .ar{display:block;margin-top:10px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--faint);min-height:15px}
+  #sg .ac .arq{display:block;margin-top:4px;font-size:14.5px;font-weight:500;line-height:1.35;color:var(--ink);min-height:4.05em}
+  #sg .ac .tx{transition:opacity .3s var(--ease),transform .45s var(--ease-out)}
+  #sg .ac.sw .tx{opacity:0;transform:translateY(5px);transition:none}
+  #sg .ac.idle .ti{background:var(--gray-10);color:var(--gray-50)}
+  #sg .ac.idle .an,#sg .ac.idle .arq{color:var(--faint);font-weight:400}
+  /* a guardrail */
+  #sg .g .gb{position:absolute;left:0;right:0;top:0;height:3px;transition:background .3s;overflow:hidden}
+  #sg .g.up .gb{top:auto;bottom:0}
+  #sg .g.chk .gb::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;background:var(--ink);animation:sgSweep .52s var(--ease) both}
+  @keyframes sgSweep{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+  #sg .gr{display:flex;align-items:flex-start;gap:8px;min-height:38px;margin-top:11px;font-size:13px;line-height:1.35;color:var(--ink)}
+  #sg .gm{width:18px;height:18px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--gray-10);color:var(--gray-30);transition:background .3s,color .3s}
+  #sg .gm svg{width:11px;height:11px;stroke-width:2.6}
+  #sg .gt{font-weight:500}
+  #sg .g.idle .gt,#sg .g.chk .gt{color:var(--faint);font-weight:400}
+  #sg .g.pop .gm{animation:sgPop .5s var(--spring) both}
+  @keyframes sgPop{0%{transform:scale(.4)}100%{transform:none}}
+  #sg .g.ok .ti,#sg .g.ok .gm{background:var(--accent);color:#fff}   #sg .g.ok .gb{background:var(--accent)}
+  #sg .g.no .ti,#sg .g.no .gm{background:var(--red);color:#fff}      #sg .g.no .gb{background:var(--red)}      #sg .g.no{background:var(--red-050)}
+  #sg .g.hold .ti,#sg .g.hold .gm{background:var(--orange);color:#fff} #sg .g.hold .gb{background:var(--orange)} #sg .g.hold{background:var(--orange-050)}
+  #sg .g.undo .ti,#sg .g.undo .gm{background:var(--ink);color:#fff}  #sg .g.undo .gb{background:var(--ink)}
+  #sg .acts{display:inline-flex;gap:6px;margin:-7px 0 0 10px;vertical-align:middle}
+  #sg .acts.solo{margin-left:0}
+  #sg .btn{height:30px;padding:0 12px;border:none;background:var(--ink);color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s,transform .15s}
+  #sg .btn:hover{background:#000}
+  #sg .btn:active{transform:translateY(1px)}
+  #sg .btn.alt{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--gray-30)}
+  #sg .btn.alt:hover{background:var(--gray-10)}
+  #sg .btn.auto{animation:sgPress .5s var(--ease) both}
+  @keyframes sgPress{40%{transform:scale(.92)}}
+
+  /* the road between them */
+  #sg .road{--v:0;position:relative;height:62px}
+  #sg .lane{position:absolute;left:0;right:0;height:30px;background:var(--lane);overflow:hidden}
+  #sg .lane.l0{top:0} #sg .lane.l1{bottom:0}
+  #sg .lane::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 22px,rgba(22,22,22,.07) 22px 24px)}
+  #sg .fill{position:absolute;left:0;top:0;bottom:0;width:var(--p,0px);background:var(--fc,transparent);opacity:.24;transition:background .3s}
+  #sg .gate{position:absolute;left:var(--m,0px);width:4px;margin-left:-2px;height:30px;background:var(--ink);z-index:2;transition:transform .4s var(--ease-out),background .25s}
+  #sg .gate.b0{top:0;transform-origin:50% 0} #sg .gate.b1{bottom:0;transform-origin:50% 100%}
+  #sg .gate.ok,#sg .gate.open{transform:scaleY(.2)}
+  #sg .gate.ok{background:var(--accent)}
+  #sg .gate.hold{background:var(--orange)}
+  #sg .gate.no{background:var(--red);width:6px;margin-left:-3px}
+  #sg .tok{position:absolute;left:0;top:0;width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:var(--tc);color:#fff;box-shadow:0 0 0 2px #fff;opacity:0;z-index:3}
+  #sg .tok svg{width:12px;height:12px;stroke-width:2}
+  #sg .tok.on{opacity:1}
+  #sg .tok.bad{background:var(--red)}
+  #sg .tok.bad>span{display:flex;animation:sgShake .4s var(--ease) both}
+  @keyframes sgShake{20%{transform:translateX(-3px)}50%{transform:translateX(3px)}80%{transform:translateX(-2px)}}
+
+  /* where every allowed change lands */
+  #sg .plan{display:flex;flex-direction:column;justify-content:center;padding:20px 18px}
+  #sg .plan::before{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 2px var(--pc,transparent);opacity:0;pointer-events:none}
+  #sg .plan.flash::before{animation:sgFlash 1.1s var(--ease) both}
+  @keyframes sgFlash{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+  #sg .plan .pn{display:block;margin-top:16px;font-size:44px;font-weight:600;letter-spacing:-.04em;line-height:1;color:var(--ink)}
+  #sg .plan .pu{display:block;margin-top:5px;font-size:13.5px;color:var(--muted)}
+  #sg .stt{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:6px 12px;margin-top:18px;align-self:flex-start;font-size:13.5px;font-weight:600;line-height:1.25;background:var(--gray-10);color:var(--muted);transition:background .35s,color .35s}
+  #sg .stt svg{width:15px;height:15px;stroke-width:2}
+  #sg .stt .dot{width:8px;height:8px;flex:none;background:var(--gray-50);animation:sgBlink 1s steps(2) infinite}
+  #sg .stt.ok{background:var(--accent);color:#fff}
+  #sg .stt.no{background:var(--red);color:#fff}
+  #sg .stt.hold{background:var(--orange);color:#fff}
+  #sg .stt.undo{background:var(--ink);color:#fff}
+  #sg .plan .pl{display:block;margin-top:10px;font-size:13px;line-height:1.4;color:var(--muted);min-height:3.5em}
+
+  /* audit trail: every outcome lands here, including the refusals */
+  #sg .log{background:#fff;padding:14px 16px 10px}
+  #sg .log .hd small{font-size:13.5px;color:var(--muted)}
+  #sg .log .hd>div{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+  #sg .log .ti{background:var(--accent);color:#fff}
+  #sg .ll{--lr:38px;height:calc(var(--lr)*3);margin-top:10px;overflow:hidden}
+  #sg .lr{display:grid;grid-template-columns:46px 150px minmax(0,1fr) auto;gap:14px;align-items:center;height:var(--lr);font-size:13.5px;color:var(--ink);box-shadow:0 -1px 0 var(--gray-10)}
+  #sg .lr.new{animation:sgRow .55s var(--ease-out) both}
+  @keyframes sgRow{from{margin-top:calc(var(--lr)*-1);opacity:0}to{margin-top:0;opacity:1}}
+  #sg .lr time{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+  #sg .lr .la{display:flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap;overflow:hidden}
+  #sg .lr .la svg{width:15px;height:15px;color:var(--muted)}
+  #sg .lr .lx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+  #sg .lo{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;font-weight:600;white-space:nowrap}
+  #sg .lo i{width:8px;height:8px;background:var(--oc)}
+  #sg .fine{margin:16px 0 0;text-align:center;font-size:12.5px;color:var(--faint)}
+
+  #sg .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease-soft),transform .8s var(--ease-soft)}
+  #sg .reveal.in{opacity:1;transform:none}
+  #sg .reveal.d1{transition-delay:.1s}
+
+  @media(max-width:940px){
+    /* the road turns to run down the left edge */
+    #sg .lanes{grid-template-columns:50px minmax(0,1fr);grid-template-rows:none}
+    #sg .road{--v:1;grid-column:1;grid-row:1/7;height:auto}
+    #sg #a-p{grid-column:2;grid-row:1} #sg #g-sso{grid-column:2;grid-row:2} #sg #g-rbac{grid-column:2;grid-row:3}
+    #sg #a-a{grid-column:2;grid-row:4} #sg #g-auto{grid-column:2;grid-row:5} #sg #g-over{grid-column:2;grid-row:6}
+    #sg .plan{grid-column:1/3;grid-row:7;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:18px;align-items:center}
+    #sg .plan .hd{grid-column:1/3}
+    #sg .plan .pn{margin-top:12px;font-size:38px}
+    #sg .plan .pu{grid-column:1;margin-top:2px}
+    #sg .plan .stt{grid-column:2;grid-row:2/4;margin-top:12px;justify-self:start;align-self:center}
+    #sg .plan .pl{grid-column:1/3;min-height:2.8em}
+    #sg .lane{left:auto;right:auto;top:0;bottom:0;width:24px;height:auto}
+    #sg .lane.l0{left:0} #sg .lane.l1{right:0;top:var(--s1,0px);bottom:0}
+    #sg .lane::after{background:repeating-linear-gradient(180deg,transparent 0 22px,rgba(22,22,22,.07) 22px 24px)}
+    #sg .fill{right:0;bottom:auto;width:auto;height:var(--p,0px)}
+    #sg .gate{left:auto;top:var(--m,0px);width:24px;height:4px;margin:-2px 0 0}
+    #sg .gate.b0{left:0;top:var(--m,0px);transform-origin:0 50%} #sg .gate.b1{right:0;top:var(--m,0px);bottom:auto;transform-origin:100% 50%}
+    #sg .gate.ok,#sg .gate.open{transform:scaleX(.2)}
+    #sg .gate.no{width:24px;height:6px;margin:-3px 0 0}
+    #sg .g .gb,#sg .g.up .gb{left:0;right:auto;top:0;bottom:0;width:3px;height:auto}
+    #sg .g.chk .gb{background:var(--ink)}
+    #sg .g.chk .gb::after{display:none}
+    #sg .ac .arq{min-height:2.7em}
+    #sg .lr{grid-template-columns:46px 124px minmax(0,1fr) auto;gap:10px}
+  }
+  @media(max-width:720px){
+    #sg .tabs{grid-template-columns:minmax(0,1fr);row-gap:2px;margin-bottom:16px}
+    #sg .tab{padding:10px 0 10px 14px;align-items:center}
+    #sg .tab .b2{right:auto;bottom:0;width:3px;height:auto}
+    #sg .tab .b2 i{width:100%!important;height:0}
+    #sg .tab.on .b2 i{height:100%}
+    #sg .tab.on.run .b2 i{height:0;animation:sgFillV var(--dw,7000ms) linear forwards}
+    @keyframes sgFillV{to{height:100%}}
+  }
+  @media(max-width:640px){
+    #sg .bar{font-size:10.5px;gap:8px;padding-left:12px}
+    #sg .bar .t em{display:none}
+    #sg .bar .n{font-size:9px;letter-spacing:.06em}
+    #sg .body{padding:8px}
+    #sg .zh{flex-wrap:wrap;gap:4px 10px;padding:9px 12px}
+    #sg .zh small{order:3;flex-basis:100%}
+    #sg .ac,#sg .g{padding:14px 12px 12px}
+    #sg .log{padding:12px 12px 8px}
+    #sg .ll{--lr:54px}
+    #sg .lr{grid-template-columns:42px minmax(0,1fr) auto;grid-template-rows:auto auto;gap:1px 8px;align-content:center;font-size:13px}
+    #sg .lr .lx{grid-column:2/-1;grid-row:2}
+    #sg .lr time{grid-row:1/3;align-self:center}
+    #sg .lr .la{font-size:12.5px;gap:6px}
+    #sg .lr .la svg{width:14px;height:14px}
+    #sg .lo{font-size:10px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    #sg *{animation:none!important;transition:none!important}
+    #sg .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<section id="sg" aria-labelledby="sgTitle">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Security &amp; governance</span>
+      <h2 id="sgTitle">Autonomy <span class="hl">with guardrails.</span></h2>
+      <p>Enterprise control over who, and what, can change the plan.</p>
+    </div>
+
+    <div class="reveal d1">
+      <div class="tabs" id="sgTabs" role="tablist" aria-label="Example change requests"></div>
+      <div class="frame" id="sgFrame">
+        <div class="scr">
+          <div class="bar"><span class="sq"></span><span class="t">Change control <em>· two lanes into the plan</em></span><span class="n">ILLUSTRATIVE EXAMPLE</span>
+            <button type="button" class="ib" id="sgPlay" aria-label="Pause"></button></div>
+          <div class="body">
+            <div class="zone">
+              <div class="zh" id="sgZh"></div>
+              <div class="zin">
+                <div class="lanes" id="sgL"></div>
+                <div class="log"><div class="hd" id="sgLh"></div><div class="ll" id="sgLog" aria-live="polite"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="fine">Illustrative example. Names, limits and times are placeholders.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  var root=document.getElementById('sg'); if(!root) return;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var I={"bot": "<path d=\"M12 8V4H8\"/><rect width=\"16\" height=\"12\" x=\"4\" y=\"8\" rx=\"2\"/><path d=\"M2 14h2\"/><path d=\"M20 14h2\"/><path d=\"M15 13v2\"/><path d=\"M9 13v2\"/>", "check": "<path d=\"M20 6 9 17l-5-5\"/>", "hand": "<path d=\"M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2\"/><path d=\"M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2\"/><path d=\"M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8\"/><path d=\"M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15\"/>", "hourglass": "<path d=\"M5 22h14\"/><path d=\"M5 2h14\"/><path d=\"M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22\"/><path d=\"M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2\"/>", "key-round": "<path d=\"M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z\"/><circle cx=\"16.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>", "pause": "<rect x=\"14\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\"/><rect x=\"5\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\"/>", "play": "<path d=\"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z\"/>", "route": "<circle cx=\"6\" cy=\"19\" r=\"3\"/><path d=\"M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15\"/><circle cx=\"18\" cy=\"5\" r=\"3\"/>", "scroll-text": "<path d=\"M15 12h-5\"/><path d=\"M15 8h-5\"/><path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/><path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/>", "shield-alert": "<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"M12 8v4\"/><path d=\"M12 16h.01\"/>", "shield-x": "<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m14.5 9.5-5 5\"/><path d=\"m9.5 9.5 5 5\"/>", "sliders-horizontal": "<path d=\"M10 5H3\"/><path d=\"M12 19H3\"/><path d=\"M14 3v4\"/><path d=\"M16 17v4\"/><path d=\"M21 12h-9\"/><path d=\"M21 19h-5\"/><path d=\"M21 5h-7\"/><path d=\"M8 10v4\"/><path d=\"M8 12H3\"/>", "undo-2": "<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>", "user-round": "<circle cx=\"12\" cy=\"8\" r=\"5\"/><path d=\"M20 21a8 8 0 0 0-16 0\"/>", "users": "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><path d=\"M16 3.128a4 4 0 0 1 0 7.744\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/>", "x": "<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>"};   /* Lucide (ISC licence) */
+  function ic(n){return '<svg class="i" viewBox="0 0 24 24">'+I[n]+'</svg>';}
+  function $(id){return document.getElementById(id);}
+
+  /* ================= content: the six homepage guardrails =================
+     four are gates on the road (who: sign-on, role · what: autonomy, override); the audit trail runs under it; the data boundary surrounds it */
+  var G={sso:['key-round','Single sign-on','SSO with your identity provider.',0],rbac:['users','Role-based access','Permissions by role, team and depot.',0],
+         auto:['sliders-horizontal','Permissioned autonomy','Define exactly what the agent may change alone.',1],over:['hand','Human override','Take back any decision, at any time.',1]};
+  var MARK={ok:'check',no:'x',hold:'hourglass',undo:'undo-2'};
+  var TEAM={ic:'user-round',n:'Your team',r:'',rq:'No request.'}, BOT={ic:'bot',n:'Syncnox agent',r:'',rq:'No request.'};
+  var S=[
+    {k:'WHO',t:'A planner outside their depot',ic:'user-round',c:'#0f62fe',dw:7400},
+    {k:'WHAT',t:'The agent, within its limits',ic:'bot',c:'#8a3ffc',dw:8000},
+    {k:'WHAT',t:'The agent, beyond its limits',ic:'shield-alert',c:'#c65300',dw:12500}
+  ];
+
+  /* ================= build ================= */
+  function actor(id,lb,em,a,c){ return '<div class="ac idle" id="'+id+'" style="--tc:'+c+'"><div class="hd"><span class="ti">'+ic(a.ic)+'</span><div><span class="lb">'+lb+'<em>'+em+'</em></span><span class="an tx"></span></div></div><span class="ar tx"></span><span class="arq tx"></span></div>'; }
+  function gateTile(id){ var x=G[id]; return '<div class="g idle'+(x[3]?'':' up')+'" id="g-'+id+'"><i class="gb"></i><div class="hd"><span class="ti">'+ic(x[0])+'</span><b>'+x[1]+'</b></div><span class="ds">'+x[2]+'</span><div class="gr"><span class="gm"></span><span class="gt"></span></div></div>'; }
+  $('sgZh').innerHTML=ic('lock')+'<b>Your data stays yours</b><small>Never used to train public models.</small><span class="tag"><i></i>ALWAYS ON</span>';
+  $('sgL').innerHTML=actor('a-p','WHO','people',TEAM,'#0f62fe')+gateTile('sso')+gateTile('rbac')
+    +'<div class="road" id="sgRoad" aria-hidden="true"><i class="lane l0"><i class="fill" id="f0"></i></i><i class="lane l1"><i class="fill" id="f1"></i></i>'
+    +'<i class="gate b0" id="b-sso"></i><i class="gate b0" id="b-rbac"></i><i class="gate b1" id="b-auto"></i><i class="gate b1" id="b-over"></i>'
+    +'<span class="tok" id="tk-p" style="--tc:#0f62fe"><span>'+ic('user-round')+'</span></span><span class="tok" id="tk-a" style="--tc:#8a3ffc"><span>'+ic('bot')+'</span></span></div>'
+    +actor('a-a','WHAT','the agent',BOT,'#8a3ffc')+gateTile('auto')+gateTile('over')
+    +'<div class="plan" id="sgPlan"><div class="hd"><span class="ti" style="background:#161616;color:#fff">'+ic('route')+'</span><span class="lb">THE PLAN<em>live</em></span></div><span class="pn" id="sgPn">12</span><span class="pu">changes today</span><span class="stt" id="sgSt"></span><span class="pl" id="sgPl"></span></div>';
+  $('sgLh').innerHTML='<span class="ti">'+ic('scroll-text')+'</span><div><b>Complete audit trail</b><small>Every change, by person or agent, recorded.</small></div>';
+  var tabs=S.map(function(s,i){ var b=document.createElement('button'); b.type='button'; b.className='tab'; b.setAttribute('role','tab'); b.style.setProperty('--lc',s.c);
+    b.innerHTML='<span class="b2"><i></i></span><span class="pi">'+ic(s.ic)+'</span><span><small>'+s.k+'</small><b>'+s.t+'</b></span>';
+    b.addEventListener('click',function(){ userStep(i); });
+    b.addEventListener('keydown',function(e){ var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0; if(d){ var n=(i+d+3)%3; userStep(n); tabs[n].focus(); } });
+    $('sgTabs').appendChild(b); return b; });
+
+  /* ================= the road: geometry is read from the layout, so it works across and down ================= */
+  var road=$('sgRoad'), geo={}, vert=false;
+  var TK={p:{el:$('tk-p'),lane:0,st:'start',fill:$('f0'),c:'#0f62fe'},a:{el:$('tk-a'),lane:1,st:'start',fill:$('f1'),c:'#8a3ffc'}};
+  function layout(){ vert=getComputedStyle(road).getPropertyValue('--v').trim()==='1'; var R=road.getBoundingClientRect();
+    ['sso','rbac','auto','over'].forEach(function(id){ var r=$('g-'+id).getBoundingClientRect(); geo[id]=vert?(r.top+r.height/2-R.top):(r.left+r.width/2-R.left); $('b-'+id).style.setProperty('--m',geo[id]+'px'); });
+    geo.len=vert?R.height:R.width; geo.s=[0,vert?($('a-a').getBoundingClientRect().top-R.top):0]; road.style.setProperty('--s1',geo.s[1]+'px');
+    place(TK.p,0); place(TK.a,0); }
+  function M(t){ var st=t.st; if(st==='start') return geo.s[t.home]+20; if(st==='end') return geo.len+14;
+    var k=st.slice(-1), id=k==='='||k==='+'?st.slice(0,-1):st; return geo[id]+(k==='='?0:k==='+'?22:-22); }
+  function place(t,dur){ var m=M(t), c=(vert?[12,38]:[15,47])[t.lane], x=vert?c:m, y=vert?m:c, tr=dur?'transform '+dur+'ms cubic-bezier(.45,0,.2,1), opacity .3s':'opacity .3s';
+    t.el.style.transition=reduce?'none':tr; t.el.style.transform='translate('+(x-11)+'px,'+(y-11)+'px)';
+    if(t.live&&t.lane===t.home){ t.fill.style.transition=reduce||!dur?'none':(vert?'height ':'width ')+dur+'ms cubic-bezier(.45,0,.2,1)'; t.fill.style.setProperty('--p',Math.max(0,Math.min(geo.len,m)-geo.s[t.home])+'px'); } }
+  function go(k,st,dur,lane){ var t=TK[k]; t.st=st; if(lane!=null) t.lane=lane; place(t,dur); }
+  function spawn(k){ var t=TK[k]; t.home=k==='p'?0:1; t.lane=t.home; t.st='start'; t.live=true; t.el.classList.remove('bad'); t.fill.style.setProperty('--fc',t.c); place(t,0); void t.el.offsetWidth; t.el.classList.add('on'); }
+  function clearTok(k){ var t=TK[k]; t.live=false; t.st='start'; t.lane=t.home; t.el.classList.remove('on','bad'); t.fill.style.transition='none'; t.fill.style.setProperty('--p','0px'); }
+  TK.p.home=0; TK.a.home=1;
+
+  /* ================= pieces of state ================= */
+  var tm=[], cur=-1, clock=9*60+18, changes=12;
+  function later(fn,ms){ tm.push(setTimeout(fn,reduce?0:ms)); }
+  function gate(id,state,text,acts){ var g=$('g-'+id), cls=state==='ask'?'hold':state, b=$('b-'+id); g.className='g '+cls+(G[id][3]?'':' up'); void g.offsetWidth; if(cls!=='chk'&&cls!=='idle') g.classList.add('pop');
+    b.className='gate b'+G[id][3]+(cls==='ok'||cls==='no'||cls==='hold'?' '+cls:'')+(state==='pass'?' open':'');
+    g.querySelector('.gm').innerHTML=MARK[cls]?ic(MARK[cls]):''; var t=g.querySelector('.gt'); t.textContent=text||'';
+    if(acts){ var a=document.createElement('span'); a.className='acts'+(text?'':' solo'); acts.forEach(function(x){ var bt=document.createElement('button'); bt.type='button'; bt.className='btn'+(x[2]?' alt':''); bt.textContent=x[0]; bt.addEventListener('click',x[1]); a.appendChild(bt); }); t.appendChild(a); } }
+  function who(id,a){ var el=$(id); el.classList.add('sw'); el.classList.toggle('idle',!a.r); el.querySelector('.ti').innerHTML=ic(a.ic); el.querySelector('.an').textContent=a.n; el.querySelector('.ar').textContent=a.r; el.querySelector('.arq').textContent=a.rq; void el.offsetWidth; el.classList.remove('sw'); }
+  function status(cls,text,icn,last){ var s=$('sgSt'); s.className='stt '+cls; s.innerHTML=(icn?ic(icn):'<i class="dot"></i>')+'<span>'+text+'</span>'; if(last!=null) $('sgPl').textContent=last; }
+  function plan(delta,color){ changes+=delta; $('sgPn').textContent=changes; var p=$('sgPlan'); p.style.setProperty('--pc',color); p.classList.remove('flash'); void p.offsetWidth; p.classList.add('flash'); }
+  function addLog(a,text,oc,out,quiet){ clock+=quiet?7:3; var hh=Math.floor(clock/60), mm=clock%60, L=$('sgLog'), r=document.createElement('div');
+    r.className='lr'+(quiet?'':' new'); r.innerHTML='<time>'+(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm+'</time><span class="la">'+ic(a.ic)+a.n+'</span><span class="lx">'+text+'</span><span class="lo" style="--oc:'+oc+'"><i></i>'+out+'</span>';
+    L.insertBefore(r,L.firstChild); while(L.children.length>4) L.removeChild(L.lastChild); }
+  /* drive a token up to a gate, check, then show the result */
+  function arrive(k,id,t,dur,state,text,acts){ later(function(){ go(k,id,dur); },t); later(function(){ gate(id,'chk','Checking'); },t+dur); later(function(){ gate(id,state,text,acts); },t+dur+520); return t+dur+640; }
+  var YOU={ic:'user-round',n:'You'}, MAYA={ic:'user-round',n:'Maya Lind'}, AGENT={ic:'bot',n:'Syncnox agent'};
+
+  function reset(){ tm.forEach(clearTimeout); tm=[]; ['sso','rbac','auto','over'].forEach(function(id){ gate(id,'idle','Waiting'); }); clearTok('p'); clearTok('a'); who('a-p',TEAM); who('a-a',BOT); }
+  function step(i){
+    cur=i; reset(); var s=S[i];
+    tabs.forEach(function(b,k){ b.classList.toggle('on',k===i); b.setAttribute('aria-selected',k===i?'true':'false'); b.tabIndex=k===i?0:-1; b.classList.remove('run'); });
+    root.style.setProperty('--dw',s.dw+'ms'); if(playing){ void tabs[i].offsetWidth; tabs[i].classList.add('run'); }
+    if(i===0) changes=12; $('sgPn').textContent=changes; status('chk','Checking','', 'A request is on its way.'); var t;
+    if(i===0){ /* a person, signed in, but outside their depot: stopped at the role gate */
+      var jonas={ic:'user-round',n:'Jonas Berg',r:'PLANNER · WEST DEPOT',rq:'Reassign 3 jobs on the North depot round.'}; who('a-p',jonas); spawn('p');
+      t=arrive('p','sso',300,620,'ok','Signed in with company SSO.');
+      t=arrive('p','rbac',t,620,'no','West depot only. No write access to North.');
+      later(function(){ TK.p.el.classList.add('bad'); TK.p.fill.style.setProperty('--fc','#da1e28'); },t-120);
+      later(function(){ status('no','Blocked by role','shield-x','No change. The request stopped at the role gate.'); plan(0,'#da1e28'); addLog(jonas,'tried to reassign 3 jobs on North','#da1e28','Refused · role'); },t+250);
+    }
+    if(i===1){ /* the agent, inside what it may do alone: straight through, and still reversible */
+      who('a-a',{ic:'bot',n:'Syncnox agent',r:'ALWAYS-ON AGENT',rq:'Re-sequence 2 stops on VAN-07 after a 12 min delay.'}); spawn('a');
+      t=arrive('a','auto',300,620,'ok','Inside its limit. May act alone.');
+      t=arrive('a','over',t,620,'ok','No approval needed.');
+      later(function(){ go('a','end',620); },t); later(function(){ TK.a.el.classList.remove('on');
+        gate('over','ok','Applied.',[['Take it back',takeBack,true]]); status('ok','Applied by the agent','check','Agent re-sequenced 2 stops on VAN-07.'); plan(1,'#015c11'); addLog(AGENT,'re-sequenced 2 stops on VAN-07','#015c11','Applied · policy'); },t+560);
+    }
+    if(i===2){ /* the agent, past its limit: waved on to a person, and held there */
+      who('a-a',{ic:'bot',n:'Syncnox agent',r:'ALWAYS-ON AGENT',rq:'Move 14 jobs to tomorrow after a vehicle breakdown.'}); spawn('a');
+      later(function(){ go('a','auto',620); },300); later(function(){ gate('auto','chk','Checking'); },920);
+      later(function(){ gate('auto','hold','Beyond its limit. Needs a yes.'); $('b-auto').classList.add('open'); },1440);
+      later(function(){ go('a','over',620); },1560);
+      later(function(){ gate('over','ask','',[['Approve',function(){ decide(true,true); }],['Reject',function(){ decide(false,true); },true]]); status('hold','Waiting for approval','hourglass','Held at the override gate until a person decides.'); },2180);
+      if(!reduce) later(function(){ var b=$('g-over').querySelector('.btn'); if(b) b.classList.add('auto'); later(function(){ decide(true,false); },450); },5000);
+    }
+    sched();
+  }
+  /* a person answers: they pass their own lane first, then cross over to open (or shut) the override gate */
+  function decide(yes,byUser){
+    if(cur!==2) return; tm.forEach(clearTimeout); tm=[]; var nm=byUser?'you':'Maya Lind', a=byUser?YOU:MAYA;
+    gate('over','hold','Waiting for the approver.'); who('a-p',{ic:'user-round',n:byUser?'You':'Maya Lind',r:'DISPATCHER · EAST DEPOT',rq:(yes?'Approve':'Reject')+' the agent’s move of 14 jobs.'}); spawn('p');
+    var t=arrive('p','sso',150,480,'ok',(byUser?'You are':'Maya Lind is')+' signed in with company SSO.');
+    t=arrive('p','rbac',t,480,'ok','Dispatcher · East depot may approve.');
+    later(function(){ go('p','over=',420); },t); later(function(){ go('p','over=',300,1); },t+420);
+    later(function(){ TK.p.el.classList.remove('on'); gate('over',yes?'ok':'no',yes?'Approved by '+nm+'.':'Rejected by '+nm+'. Plan unchanged.');
+      gate('auto',yes?'ok':'hold',yes?'Beyond its limit. Approved.':'Beyond its limit. Not approved.'); if(!yes){ $('b-auto').classList.add('open'); TK.a.el.classList.add('bad'); TK.a.fill.style.setProperty('--fc','#da1e28'); } },t+760);
+    if(yes){ later(function(){ go('a','end',620); },t+900); later(function(){ TK.a.el.classList.remove('on'); },t+1460); }
+    later(function(){ status(yes?'ok':'no',yes?'Applied after approval':'Rejected',yes?'check':'x',yes?'Agent moved 14 jobs to tomorrow, approved by '+nm+'.':'No change. The agent’s request was rejected by '+nm+'.'); plan(yes?1:0,yes?'#015c11':'#da1e28');
+      addLog(a,(yes?'approved':'rejected')+' the agent’s move of 14 jobs',yes?'#015c11':'#da1e28',yes?'Applied · approval':'Rejected'); },yes?t+1500:t+1000);
+    if(byUser) linger(t+5200);
+  }
+  function takeBack(){
+    if(cur!==1) return; tm.forEach(clearTimeout); tm=[];
+    gate('over','undo','Taken back by you. Plan restored.'); clearTok('a');
+    later(function(){ status('undo','Taken back by you','undo-2','Your override restored the previous plan.'); plan(-1,'#161616'); addLog(YOU,'took back the agent’s change on VAN-07','#161616','Reverted · override'); },350);
+    linger(4800);
+  }
+
+  /* ================= autoplay (loops) ================= */
+  var playing=!reduce, inView=false, paused=false, tick=null, t0=0, spent=0, started=false, dwell=0;
+  function advancing(){ return playing&&!paused&&inView&&cur>-1; }
+  function sched(){ dwell=S[cur].dw; spent=0; t0=0; sync(); }
+  function linger(ms){ dwell=ms; spent=0; t0=0; root.style.setProperty('--dw',ms+'ms'); var b=tabs[cur]; b.classList.remove('run'); if(playing){ void b.offsetWidth; b.classList.add('run'); } sync(); }
+  function sync(){
+    tabs.forEach(function(b){ b.classList.toggle('hold',!advancing()); });
+    clearTimeout(tick); tick=null;
+    if(advancing()){ t0=Date.now(); tick=setTimeout(function(){ step((cur+1)%3); },Math.max(300,dwell-spent)); }
+    else if(t0){ spent+=Date.now()-t0; t0=0; }
+  }
+  function userStep(i){ playing=!reduce; paused=false; setPlayIcon(); step(i); }
+  function setPlayIcon(){ var b=$('sgPlay'), stopped=paused||!playing; b.innerHTML=ic(stopped?'play':'pause'); b.setAttribute('aria-label',stopped?'Play':'Pause'); }
+  $('sgPlay').addEventListener('click',function(){ paused=!paused; setPlayIcon(); sync(); });
+  var frame=$('sgFrame');
+  frame.addEventListener('pointermove',function(e){ var r=frame.getBoundingClientRect(); frame.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%'); frame.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%'); });
+
+  /* first paint: a trail that already has history */
+  addLog(AGENT,'updated 4 customer ETAs','#015c11','Applied · policy',true);
+  addLog(MAYA,'approved tomorrow’s plan for East','#015c11','Allowed · role',true);
+  addLog({ic:'user-round',n:'Omar Haddad'},'signed in from a new device','#015c11','Allowed · SSO',true);
+  setPlayIcon(); tabs[0].classList.add('on'); ['sso','rbac','auto','over'].forEach(function(id){ gate(id,'idle','Waiting'); }); who('a-p',TEAM); who('a-a',BOT); status('chk','Checking','','A request is on its way.');
+  layout(); if('ResizeObserver' in window) new ResizeObserver(layout).observe($('sgL')); window.addEventListener('resize',layout);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(layout);
+  var reveals=root.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window && !reduce){
+    var ro=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target);} }); },{threshold:.1});
+    reveals.forEach(function(x){ro.observe(x);});
+    var vo=new IntersectionObserver(function(es){ inView=es[0].isIntersecting; if(inView&&!started){ started=true; step(0); } else sync(); },{threshold:.2});
+    vo.observe(frame);
+  } else { reveals.forEach(function(x){x.classList.add('in');}); inView=true; step(0); }
+})();
+</script>
+
+<script>
+/* iframe helper: report real height to the parent page */
+(function(){
+  if(window.parent===window)return;
+  var last=0;
+  function send(){
+    var h=Math.ceil(document.documentElement.getBoundingClientRect().height);
+    if(h&&h!==last){last=h;window.parent.postMessage({syncnoxFrame:'security',height:h},'*');}
+  }
+  if('ResizeObserver' in window){new ResizeObserver(send).observe(document.documentElement);}
+  window.addEventListener('load',send);
+  window.addEventListener('resize',send);
+  send();
+})();
+</script>
+</body>
+</html>
